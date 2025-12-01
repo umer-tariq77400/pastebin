@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import './Auth.css';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -27,45 +26,45 @@ function Login() {
 
   return (
     <div className="auth-container">
-      <div className="auth-box">
-        <h2>Login</h2>
-        
-        {error && <div className="error-message">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Username:</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
-              disabled={loading}
-            />
-          </div>
+      <h2>Login</h2>
 
-          <div className="form-group">
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              disabled={loading}
-            />
-          </div>
+      {error && <div style={{color:'red', marginBottom:'15px'}}>{error}</div>}
 
-          <button type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter your username"
+            disabled={loading}
+          />
+        </div>
 
-        <p className="auth-link">
-          Don't have an account? <a href="/register">Sign up here</a>
-        </p>
-      </div>
+        <div className="form-group">
+          <label htmlFor="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            disabled={loading}
+          />
+        </div>
+
+        <div className="form-actions">
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{width:'100%'}}>
+                {loading ? 'Logging in...' : 'Login'}
+            </button>
+        </div>
+      </form>
+
+      <p style={{textAlign:'center', marginTop:'15px'}}>
+        Don't have an account? <a href="/register">Sign up here</a>
+      </p>
     </div>
   );
 }

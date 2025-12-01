@@ -41,14 +41,21 @@ const getCsrfTokenFromCookie = () => {
 // Add CSRF token to request headers for POST, PUT, PATCH, DELETE
 client.interceptors.request.use(
     async (config) => {
-        // Only fetch CSRF token for non-GET requests
+        // Only fetch CSRF token for non-GET requests if not already fetched
         if (['post', 'put', 'patch', 'delete'].includes(config.method)) {
+             // For login, we don't need to fetch CSRF from login page first if we have it?
+             // Actually, the original implementation fetched /api-auth/login/ to set the cookie.
+             // We can keep it.
             await fetchCsrfToken();
             const csrfToken = getCsrfTokenFromCookie();
             if (csrfToken) {
                 config.headers['X-CSRFToken'] = csrfToken;
             }
         }
+
+        // Add Authorization header if token exists in localStorage (if we switch to Token auth)
+        // But the current implementation seems to rely on Session auth (cookies).
+        // Let's stick to Session auth as it's configured in client.js
         return config;
     },
     (error) => {
