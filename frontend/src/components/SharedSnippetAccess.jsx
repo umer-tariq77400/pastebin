@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import Loading from './Loading';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getSharedSnippet } from '../api/snippet';
 
 const SharedSnippetAccess = () => {
@@ -8,6 +9,8 @@ const SharedSnippetAccess = () => {
     const [snippet, setSnippet] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -27,7 +30,10 @@ const SharedSnippetAccess = () => {
     if (snippet) {
         return (
             <div className="app-container">
-                <div className="snippet-card" style={{marginTop:'50px'}}>
+                <button onClick={() => navigate('/')} className="btn btn-secondary" style={{marginBottom:'20px'}}>
+                    &larr; Back to Home
+                </button>
+                <div className="snippet-card">
                     <h2>{snippet.title}</h2>
                     <p><strong>Language:</strong> {snippet.language}</p>
                     <div dangerouslySetInnerHTML={{ __html: snippet.highlight }} />
@@ -52,8 +58,8 @@ const SharedSnippetAccess = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                    {loading ? 'Verifying...' : 'View Snippet'}
+                <button type="submit" className="btn btn-primary" disabled={loading} style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'10px'}}>
+                    {loading ? <Loading width={20} height={20} color="#fff" /> : 'View Snippet'}
                 </button>
             </form>
         </div>

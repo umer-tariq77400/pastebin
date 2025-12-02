@@ -33,7 +33,7 @@ export const login = async (username, password) => {
 
 // Logout using DRF's session authentication
 export const logout = () => {
-    return client.get('/api-auth/logout/'); // DRF logout is usually a GET or we can use POST if configured
+    return client.post('/api-auth/logout/'); // DRF logout is usually a GET or we can use POST if configured
 }
 
 // Get current authenticated user info

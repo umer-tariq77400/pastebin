@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Loading from './Loading';
 import { getSnippets, getCurrentUser, updateUserProfile, parseSharedUrl, deleteSnippet, createSnippet, updateSnippet } from '../api/snippet';
 import { useNavigate, Link } from 'react-router-dom';
 import EditProfileModal from './EditProfileModal';
@@ -81,7 +82,7 @@ const Dashboard = () => {
         }
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (!user) return <div className="loading-container"><Loading /></div>;
 
     return (
         <div className="dashboard">
@@ -118,20 +119,36 @@ const Dashboard = () => {
                 </div>
                 <div className="snippets-list">
                     {snippets.map(snippet => (
-                        <div key={snippet.id} className="snippet-card">
+                        <div 
+                            key={snippet.id} 
+                            className="snippet-card" 
+                            onClick={() => navigate(`/snippets/${snippet.id}`)}
+                        >
                             <h3>{snippet.title || 'Untitled'}</h3>
                             <div className="snippet-preview">
                                 {snippet.code.substring(0, 100)}...
                             </div>
-                            <Link to={`/snippets/${snippet.id}`} className="read-more">View Details</Link>
+                            {/* View Details link removed as per request */}
                             <div className="card-actions">
-                                <button className="icon-btn" onClick={() => openShareModal(snippet)} title="Share">
+                                <button 
+                                    className="icon-btn" 
+                                    onClick={(e) => { e.stopPropagation(); openShareModal(snippet); }} 
+                                    title="Share"
+                                >
                                     <span className="material-icons">share</span>
                                 </button>
-                                <button className="icon-btn" onClick={() => openEditModal(snippet)} title="Edit">
+                                <button 
+                                    className="icon-btn" 
+                                    onClick={(e) => { e.stopPropagation(); openEditModal(snippet); }} 
+                                    title="Edit"
+                                >
                                     <span className="material-icons">edit</span>
                                 </button>
-                                <button className="icon-btn delete" onClick={() => handleDelete(snippet.id)} title="Delete">
+                                <button 
+                                    className="icon-btn delete" 
+                                    onClick={(e) => { e.stopPropagation(); handleDelete(snippet.id); }} 
+                                    title="Delete"
+                                >
                                     <span className="material-icons">delete</span>
                                 </button>
                             </div>

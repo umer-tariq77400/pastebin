@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Loading from './Loading';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -56,8 +57,8 @@ function Login() {
         </div>
 
         <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{width:'100%'}}>
-                {loading ? 'Logging in...' : 'Login'}
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{width:'100%', display:'flex', justifyContent:'center', alignItems:'center'}}>
+                {loading ? <Loading width={20} height={20} color="#fff" /> : 'Login'}
             </button>
         </div>
       </form>

@@ -37,36 +37,6 @@ class SnippetTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Snippet.objects.count(), 0)
 
-    def test_share_snippet_access(self):
-        # Create another user
-        other_user = User.objects.create_user(username='other', password='password')
-        self.client.logout()
-        self.client.login(username='other', password='password')
-
-        # Try to access snippet via detail view (should fail if not owner? Or is it read only?)
-        # Permission is IsOwnerOrReadOnly. So GET is allowed for anyone.
-        # Wait, if GET is allowed for anyone, then password protection logic in ViewSet 'retrieve' needs to be checked.
-        # My ViewSet uses IsAuthenticatedOrReadOnly.
-        # But I didn't override 'retrieve' in ViewSet to block access without password.
-        # The requirement: "If they enter the password they will see the snippet detail page".
-        # Implies regular access is blocked?
-        # But standard pastebins are public usually.
-        # User said: "Now the other person having the link can use that link and will see a page asking for login first and then after logining in they will see a page that asks for the password for that snippets."
-        # This implies standard access via ID might be restricted? Or maybe the ID is hidden and only UUID is known?
-        # If I know the ID, can I access it?
-        # If `IsOwnerOrReadOnly` is set, anyone can read.
-        # I should probably restrict `retrieve` to owner only, unless accessed via `retrieve_shared` with password?
-        # Or maybe the requirement "password for that snippets" applies to *shared* link access.
-        # If I browse /snippets/1, do I see it?
-        # The user says "Users come and login... below the profile they will see all *their* snippets".
-        # It doesn't say there is a public feed.
-        # So maybe `queryset = Snippet.objects.all()` exposes everything to everyone.
-        # If the app is "My Pastebin", maybe I should only see *my* snippets in the list?
-        # But `IsOwnerOrReadOnly` allows read to everyone.
-        # I should change permission to `IsOwner` for standard list/retrieve?
-        # But `retrieve_shared` needs to be accessible by others (authenticated).
-        pass
-
     def test_retrieve_shared_snippet(self):
         uuid = self.snippet.uuid
         # Ensure password is not None
@@ -96,3 +66,25 @@ class SnippetTests(APITestCase):
         response = self.client.post(url, {'password': password})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['title'], 'Test Snippet')
+
+    def test_other_user_cannot_see_snippet(self):
+        # Create another user
+        User.objects.create_user(username='other', password='password')
+        self.client.logout()
+        self.client.login(username='other', password='password')
+
+        # List snippets
+        url = reverse('snippet-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Pagination is enabled, so check 'count' or 'results'
+        if 'results' in response.data:
+             self.assertEqual(len(response.data['results']), 0)
+             self.assertEqual(response.data['count'], 0)
+        else:
+             self.assertEqual(len(response.data), 0)
+
+        # Retrieve snippet by ID
+        url = reverse('snippet-detail', args=[self.snippet.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

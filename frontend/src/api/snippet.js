@@ -12,7 +12,7 @@ export const deleteSnippet = (id) => client.delete(`/snippets/${id}/`);
 
 export const getCurrentUser = () => client.get('/current_user/');
 
-export const updateUserProfile = (id, data) => client.put(`/users/${id}/`, data);
+export const updateUserProfile = (id, data) => client.patch(`/users/${id}/`, data);
 
 export const getSharedSnippet = (uuid, password) => {
     return client.post(`/snippets/shared/${uuid}/`, { password });

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Loading from './Loading';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,11 +28,11 @@ function Register() {
     }
 
     // Call register from useAuth
-    const result = await register(username, password, email);
+    const result = await register(username, email, password);
     
     if (result.success) {
-      // Redirect to login or home
-      navigate('/login');
+      // Redirect to home page
+      navigate('/');
     }
   };
 
@@ -87,8 +88,8 @@ function Register() {
         </div>
 
         <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{width:'100%'}}>
-                {loading ? 'Registering...' : 'Register'}
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{width:'100%', display:'flex', justifyContent:'center', alignItems:'center'}}>
+                {loading ? <Loading width={20} height={20} color="#fff" /> : 'Register'}
             </button>
         </div>
       </form>

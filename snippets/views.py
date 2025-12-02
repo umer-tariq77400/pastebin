@@ -1,17 +1,21 @@
+import secrets
+import string
+
 from django.contrib.auth.models import User
-from rest_framework import permissions, renderers, viewsets, status
+from rest_framework import permissions, renderers, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 
 from .models import Snippet
-from .permissions import IsOwnerOrReadOnly
 from .serializers import RegisterSerializer, SnippetSerializer, UserSerializer
 
 
 class SnippetViewSet(viewsets.ModelViewSet):
-    queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Snippet.objects.filter(owner=self.request.user)
 
     @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
     def highlight(self, request, *args, **kwargs):
@@ -19,19 +23,11 @@ class SnippetViewSet(viewsets.ModelViewSet):
         return Response(snippet.highlighted)
 
     def perform_create(self, serializer):
-        # Generate a random password for sharing if not provided?
-        # Actually the model allows blank=True, but user requirements say "In the share modal they will see a share link and a password".
-        # So we should probably generate one if it's empty.
-        import secrets
-        import string
-
+        # Generate a random password for sharing if not provided
         shared_password = serializer.validated_data.get('shared_password')
         if not shared_password:
              alphabet = string.ascii_letters + string.digits
              shared_password = ''.join(secrets.choice(alphabet) for i in range(8))
-             # We need to save it. But perform_create saves the serializer.
-             # We can't easily modify validated_data here for the serializer save without re-validating?
-             # Actually `save` accepts kwargs.
              serializer.save(owner=self.request.user, shared_password=shared_password)
         else:
              serializer.save(owner=self.request.user)
@@ -63,15 +59,16 @@ class SnippetViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    # Changed from ReadOnlyModelViewSet to ModelViewSet to allow updates,
-    # but we should restrict permissions.
+    """
+    API endpoint that allows users to be viewed or edited.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Users can see all users or just themselves? Default was all.
-        return User.objects.all()
+        # Users can only see their own user object
+        return User.objects.filter(id=self.request.user.id)
 
     def update(self, request, *args, **kwargs):
         # Allow user to update their own profile
@@ -81,10 +78,15 @@ class UserViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        # Allow user to delete their own profile
+        user = self.get_object()
+        if user != request.user:
+            return Response({'detail': 'You can only delete your own profile.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        # Allow user to create profile
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(['GET'])
@@ -94,7 +96,7 @@ def current_user(request):
     return Response(serializer.data)
 
 
-class RegisterView(viewsets.GenericViewSet, viewsets.mixins.CreateModelMixin):
+class RegisterViewSet(viewsets.GenericViewSet, viewsets.mixins.CreateModelMixin):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]

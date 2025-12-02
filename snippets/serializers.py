@@ -6,7 +6,7 @@ from .models import Snippet
 
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
-    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
+    highlight = serializers.CharField(source='highlighted', read_only=True)
     # Make uuid and shared_password read-only for now, but visible
     uuid = serializers.UUIDField(read_only=True)
     shared_password = serializers.CharField(read_only=True)
@@ -29,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'email']
+        fields = ['username', 'email', 'password']
 
     def create(self, validated_data):
         user = User.objects.create_user(

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Loading from './Loading';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSnippet, deleteSnippet, updateSnippet } from '../api/snippet';
 import ShareSnippetModal from './ShareSnippetModal';
@@ -46,7 +47,7 @@ function SnippetDetail() {
       }).catch(console.error);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="loading-container"><Loading /></div>;
   if (error) return <div className="error">{error}</div>;
   if (!snippet) return <div>Snippet not found</div>;
 
