@@ -1,6 +1,5 @@
 import client from './client';
 
-
 // Login using DRF's session authentication
 export const login = async (username, password) => {
     
@@ -34,7 +33,7 @@ export const login = async (username, password) => {
 
 // Logout using DRF's session authentication
 export const logout = () => {
-    return client.post('/api-auth/logout/');
+    return client.post('/api-auth/logout/'); // DRF logout is usually a GET or we can use POST if configured
 }
 
 // Get current authenticated user info

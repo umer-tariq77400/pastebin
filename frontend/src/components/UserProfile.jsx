@@ -1,6 +1,5 @@
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import './UserProfile.css';
 
 function UserProfile() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -14,13 +13,18 @@ function UserProfile() {
   };
 
   if (!isAuthenticated) {
-    return null;
+    return (
+        <div className="nav-links">
+            <a href="/login">Login</a>
+            <a href="/register">Register</a>
+        </div>
+    );
   }
 
   return (
-    <div className="user-profile">
-      <span className="username">👤 {user?.username || 'User'}</span>
-      <button onClick={handleLogout} className="logout-btn">
+    <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
+      <span style={{fontWeight:'500'}}>👤 {user?.username || 'User'}</span>
+      <button onClick={handleLogout} className="btn btn-secondary" style={{padding:'5px 10px', fontSize:'0.8rem'}}>
         Logout
       </button>
     </div>
