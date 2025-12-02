@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from .models import Snippet
 from .serializers import RegisterSerializer, SnippetSerializer, UserSerializer
+from .ai_review import review_code
 
 
 class SnippetViewSet(viewsets.ModelViewSet):
@@ -21,6 +22,22 @@ class SnippetViewSet(viewsets.ModelViewSet):
     def highlight(self, request, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet.highlighted)
+
+    @action(detail=True, methods=['post'], url_path='review')
+    def review(self, request, *args, **kwargs):
+        """
+        Review the snippet code using AI.
+        Only the owner can trigger this.
+        """
+        snippet = self.get_object()
+
+        # Double check owner (although get_queryset already filters by owner for standard actions,
+        # explicitly checking is safer if access patterns change)
+        if snippet.owner != request.user:
+             return Response({'detail': 'You do not have permission to review this snippet.'}, status=status.HTTP_403_FORBIDDEN)
+
+        review_result = review_code(snippet.code)
+        return Response({'review': review_result})
 
     def perform_create(self, serializer):
         # Generate a random password for sharing if not provided

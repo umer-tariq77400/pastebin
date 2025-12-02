@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Loading from './Loading';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSnippet, deleteSnippet, updateSnippet } from '../api/snippet';
+import { getSnippet, deleteSnippet, updateSnippet, reviewSnippet } from '../api/snippet';
 import ShareSnippetModal from './ShareSnippetModal';
 import SnippetFormModal from './SnippetFormModal';
 import { useAuth } from '../hooks/useAuth';
@@ -15,6 +15,8 @@ function SnippetDetail() {
   const [error, setError] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [review, setReview] = useState(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
 
   const fetchSnippet = async () => {
     try {
@@ -38,6 +40,19 @@ function SnippetDetail() {
               navigate('/');
           }).catch(console.error);
       }
+  };
+
+  const handleReview = () => {
+    setReviewLoading(true);
+    setReview(null);
+    reviewSnippet(id).then((response) => {
+      setReview(response.data.review);
+    }).catch((err) => {
+      console.error('Error reviewing snippet:', err);
+      alert('Failed to get review from AI.');
+    }).finally(() => {
+      setReviewLoading(false);
+    });
   };
 
   const handleUpdate = (data) => {
@@ -64,6 +79,9 @@ function SnippetDetail() {
             <h2>{snippet.title || 'Untitled Snippet'}</h2>
             {isOwner && (
                 <div style={{display:'flex', gap:'10px'}}>
+                     <button className="icon-btn" onClick={handleReview} title="Review Code" disabled={reviewLoading}>
+                        <span className="material-icons">psychology</span>
+                    </button>
                      <button className="icon-btn" onClick={() => setShowShareModal(true)} title="Share">
                         <span className="material-icons">share</span>
                     </button>
@@ -84,9 +102,15 @@ function SnippetDetail() {
         </div>
 
         <div className="code-block" dangerouslySetInnerHTML={{ __html: snippet.highlight }} />
-        {/* Fallback to raw code if highlight is empty or for copy purposes?
-            The model stores `highlighted` HTML.
-        */}
+
+        {reviewLoading && <div className="loading-container"><Loading /></div>}
+
+        {review && (
+          <div className="review-section" style={{marginTop: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '4px'}}>
+            <h3>AI Code Review</h3>
+            <pre style={{whiteSpace: 'pre-wrap', fontFamily: 'monospace'}}>{review}</pre>
+          </div>
+        )}
       </div>
 
       {showShareModal && (

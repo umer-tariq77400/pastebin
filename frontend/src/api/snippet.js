@@ -18,6 +18,8 @@ export const getSharedSnippet = (uuid, password) => {
     return client.post(`/snippets/shared/${uuid}/`, { password });
 }
 
+export const reviewSnippet = (id) => client.post(`/snippets/${id}/review/`);
+
 // Helper to check if url is a shared url from our app
 export const parseSharedUrl = (url) => {
     try {
