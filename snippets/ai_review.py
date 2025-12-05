@@ -1,16 +1,20 @@
-import os
 from google import genai
 from google.genai import types
+
+API_KEY = "AIzaSyDMVnT4XjWL-KNKnfV_86tPx-sCbTzI1_Q"
+client = None
+if API_KEY:
+    try:
+        client = genai.Client(api_key=API_KEY)
+    except Exception as e:
+        print(f"Failed to initialize Gemini client: {e}")
 
 def review_code(code_content):
     """
     Uses Google Gemini to review the provided code snippet.
     """
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        return "Error: GEMINI_API_KEY is not set."
-
-    client = genai.Client(api_key=api_key)
+    if not client:
+        return "Error: Gemini client is not initialized (likely missing API key)."
 
     prompt = f"""
     Please review the following code snippet.

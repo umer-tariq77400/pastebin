@@ -6,9 +6,9 @@ from rest_framework import permissions, renderers, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 
+from .ai_review import review_code
 from .models import Snippet
 from .serializers import RegisterSerializer, SnippetSerializer, UserSerializer
-from .ai_review import review_code
 
 
 class SnippetViewSet(viewsets.ModelViewSet):
@@ -23,12 +23,15 @@ class SnippetViewSet(viewsets.ModelViewSet):
         snippet = self.get_object()
         return Response(snippet.highlighted)
 
-    @action(detail=True, methods=['post'], url_path='review')
+    @action(detail=True, methods=['post', 'get'], url_path='review')
     def review(self, request, *args, **kwargs):
         """
         Review the snippet code using AI.
         Only the owner can trigger this.
         """
+        if request.method == 'GET':
+             return Response({'detail': 'Send a POST request to review this snippet.'})
+
         snippet = self.get_object()
 
         # Double check owner (although get_queryset already filters by owner for standard actions,
