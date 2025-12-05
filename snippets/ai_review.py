@@ -1,7 +1,8 @@
 from google import genai
 from google.genai import types
+from django.conf import settings
 
-API_KEY = "AIzaSyDMVnT4XjWL-KNKnfV_86tPx-sCbTzI1_Q"
+API_KEY = settings.GEMINI_API_KEY
 client = None
 if API_KEY:
     try:

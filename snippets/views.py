@@ -1,8 +1,10 @@
 import secrets
 import string
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import permissions, renderers, status, viewsets
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 
@@ -116,7 +118,45 @@ def current_user(request):
     return Response(serializer.data)
 
 
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(username=username, password=password)
+    
+    if user:
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user, context={'request': request}).data
+        })
+    return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def logout(request):
+    try:
+        request.user.auth_token.delete()
+    except (AttributeError, Token.DoesNotExist):
+        pass
+    return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+
+
 class RegisterViewSet(viewsets.GenericViewSet, viewsets.mixins.CreateModelMixin):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        token, _ = Token.objects.get_or_create(user=user)
+        
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user, context={'request': request}).data
+        }, status=status.HTTP_201_CREATED)

@@ -8,24 +8,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check if user is already logged in on app load
+  // Check locally stored token on app load
   useEffect(() => {
     const checkAuthStatus = async () => {
-      try {
-        // Try to fetch snippets to see if authenticated
-        // If this succeeds without 403/401, user is logged in
-        const response = await authAPI.getCurrentUser();
-        if (response.status === 200 && response.data) {
-          // If we get here, user is authenticated
-          setUser({ id: response.data.id, username: response.data.username });
-          setError(null);
+      const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+
+      if (token && storedUser) {
+        try {
+          // Set user immediately from local storage for speed
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+
+          // Verify token validity by fetching current user
+          // If this fails (e.g. token expired/invalid), catch block will run
+          await authAPI.getCurrentUser();
+        } catch {
+          console.log('Session expired or invalid');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
         }
-      } catch {
-        console.log('User not authenticated on app load');
-        setUser(null);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     checkAuthStatus();
@@ -36,31 +41,23 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      // Step 1: Send login credentials (this sets the session cookie)
-      await authAPI.login(username, password);
+      const response = await authAPI.login(username, password);
       
-      // Step 2: After login response, fetch current user to verify session is valid
-      // This also gives us the actual user data
-      const userResponse = await authAPI.getCurrentUser();
-      if (userResponse.status === 200 && userResponse.data) {
-        // Set user as authenticated with returned info
-        setUser({ id: userResponse.data.id, username: userResponse.data.username });
+      if (response.status === 200 && response.data.token) {
+        const { token, user } = response.data;
+        
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        setUser(user);
+        
         return { success: true };
       } else {
-        // Login succeeded but couldn't fetch user data
-        setError('Login failed: Could not fetch user data');
-        return { success: false, error: 'Login failed: Could not fetch user data' };
+        throw new Error('Invalid response from server');
       }
     } catch (err) {
-      console.error('Login error:', {
-        status: err.response?.status,
-        data: err.response?.data,
-        headers: err.response?.headers,
-        message: err.message
-      });
-      const errorMsg = err.response?.data?.non_field_errors?.[0] || 
+      console.error('Login error:', err);
+      const errorMsg = err.response?.data?.error || 
                        err.response?.data?.detail || 
-                       err.message || 
                        'Login failed';
       setError(errorMsg);
       return { success: false, error: errorMsg };
@@ -75,20 +72,21 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const response = await authAPI.register(username, email, password);
-      if (response.status === 201) {
-        // Registration successful, now login
-        return await login(username, password);
+      
+      if (response.status === 201 && response.data.token) {
+        const { token, user } = response.data;
+        
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        setUser(user);
+        
+        return { success: true };
       }
     } catch (err) {
-      console.error('Registration error:', {
-        status: err.response?.status,
-        data: err.response?.data,
-        message: err.message
-      });
+      console.error('Registration error:', err);
       const errorMsg = err.response?.data?.username?.[0] || 
                        err.response?.data?.password?.[0] ||
                        err.response?.data?.detail || 
-                       err.message || 
                        'Registration failed';
       setError(errorMsg);
       return { success: false, error: errorMsg };
@@ -104,16 +102,14 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       await authAPI.logout();
-      setUser(null);
-      return { success: true };
     } catch (err) {
-      // Even if logout request fails, clear local session
-      setUser(null);
-      const errorMsg = err.response?.data?.detail || 'Logged out locally';
-      console.log(errorMsg);
-      return { success: true };
+      console.log('Logout API failed, clearing local session anyway');
     } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
       setLoading(false);
+      return { success: true };
     }
   };
 
