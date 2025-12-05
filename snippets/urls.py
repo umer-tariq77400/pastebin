@@ -10,5 +10,7 @@ router.register(r'users', views.UserViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('register/', views.RegisterViewSet.as_view({'post': 'create'}), name='register'),
+    path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout'),
     path('current_user/', views.current_user),
 ]

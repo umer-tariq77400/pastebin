@@ -384,3 +384,56 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Markdown Styles */
+.markdown-preview {
+  line-height: 1.6;
+}
+
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: #333;
+}
+
+.markdown-preview p {
+  margin-bottom: 1em;
+}
+
+.markdown-preview code {
+  background-color: #f1f1f1;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9em;
+  color: #d63384; 
+}
+
+.markdown-preview pre {
+  background-color: #2d2d2d;
+  color: #f8f8f2;
+  padding: 15px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin-bottom: 1.5em;
+}
+
+.markdown-preview pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.9em;
+}
+
+.markdown-preview ul, .markdown-preview ol {
+  margin-bottom: 1em;
+  padding-left: 20px;
+}
+
+.markdown-preview blockquote {
+  border-left: 4px solid var(--primary-color);
+  margin: 0;
+  padding-left: 15px;
+  color: #666;
+  font-style: italic;
+}

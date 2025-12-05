@@ -18,6 +18,8 @@ export const getSharedSnippet = (uuid, password) => {
     return client.post(`/snippets/shared/${uuid}/`, { password });
 }
 
+export const reviewSnippet = (id) => client.post(`/snippets/${id}/review/`);
+
 // Helper to check if url is a shared url from our app
 export const parseSharedUrl = (url) => {
     try {
@@ -31,7 +33,7 @@ export const parseSharedUrl = (url) => {
              const parts = url.split('/shared/');
              return parts[1].split('/')[0];
         }
-    } catch (e) {
+    } catch {
         // Fallback for non-url strings, maybe user pasted just the UUID or partial path
         if (url.includes('/shared/')) {
              const parts = url.split('/shared/');
