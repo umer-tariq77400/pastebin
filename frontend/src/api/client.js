@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL?.trim() || 'http://127.0.0.1:8000/';
+
 const client = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: API_URL,
     timeout: 60000,
 });
 

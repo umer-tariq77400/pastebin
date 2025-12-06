@@ -20,9 +20,9 @@ class SnippetViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Snippet.objects.filter(owner=self.request.user)
 
-    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
+    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer]) 
     def highlight(self, request, *args, **kwargs):
-        snippet = self.get_object()
+        snippet = self.get_object() 
         return Response(snippet.highlighted)
 
     @action(detail=True, methods=['post', 'get'], url_path='review')
@@ -78,6 +78,27 @@ class SnippetViewSet(viewsets.ModelViewSet):
              return Response(serializer.data)
         else:
              return Response({'detail': 'Incorrect password.'}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, url_path='shared/(?P<uuid>[^/.]+)/review', methods=['post'])
+    def review_shared(self, request, uuid=None):
+        """
+        Review a shared snippet by UUID and password using AI.
+        """
+        try:
+            snippet = Snippet.objects.get(uuid=uuid)
+        except Snippet.DoesNotExist:
+            return Response({'detail': 'Snippet not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        password = request.data.get('password')
+        if request.user == snippet.owner:
+            pass # Owner can bypass password check
+        elif not password:
+             return Response({'detail': 'Password required.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif snippet.shared_password != password:
+             return Response({'detail': 'Incorrect password.'}, status=status.HTTP_403_FORBIDDEN)
+
+        review_result = review_code(snippet.code)
+        return Response({'review': review_result})
 
 
 class UserViewSet(viewsets.ModelViewSet):

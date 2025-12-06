@@ -1,6 +1,6 @@
 import client from './client';
 
-export const login = async (username, password) => {
+export const login = async (username, password) => { 
     const response = await client.post('/login/', { 
         username, 
         password 
@@ -23,3 +23,5 @@ export const register = (username, email, password) => {
         password
     });
 }
+
+export const updateUserProfile = (id, data) => client.patch(`/users/${id}/`, data);

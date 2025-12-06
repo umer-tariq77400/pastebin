@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const ShareSnippetModal = ({ snippet, onClose }) => {
     const [copiedTooltip, setCopiedTooltip] = useState({ show: false, type: '' });
     
-    // Generate the share link. Assuming frontend runs on port 5173.
-    // In production this should be dynamic.
     const shareLink = `${window.location.origin}/shared/${snippet.uuid}`;
 
     const copyToClipboard = (text, type) => {

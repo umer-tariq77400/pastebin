@@ -28,8 +28,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[], cast=list)
-
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[], cast=lambda v: [s.strip(" []'\"") for s in v.split(',')])
 
 # Application definition
 
@@ -43,7 +42,7 @@ INSTALLED_APPS = [
     'snippets',
     'rest_framework',
     'rest_framework.authtoken',
-    'corsheaders',
+    'corsheaders', 
 ]
 
 MIDDLEWARE = [
@@ -137,7 +136,9 @@ REST_FRAMEWORK = {
 }
 
 
-CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default=[], cast=list)
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default=[
+    'https://white-coast-09ac14e00.3.azurestaticapps.net',
+], cast=lambda v: [s.strip(" []'\"") for s in v.split(',')])
 CORS_ALLOW_CREDENTIALS = True
 
 
@@ -147,6 +148,62 @@ if DEBUG:
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# Security settings for production (Azure)
+
+# Enforce HTTPS
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Secure cookies
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# HSTS (HTTP Strict Transport Security)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Additional security headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'same-origin'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+SECURE_CROSS_ORIGIN_EMBEDDER_POLICY = 'require-corp'
+SECURE_CROSS_ORIGIN_RESOURCE_POLICY = 'same-site'
+USE_X_FORWARDED_HOST = True
+
+# Trusted origins for CSRF (add your Azure static site domain, e.g., https://myfrontend.azurestaticapps.net)
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default=[], cast=lambda v: [s.strip(" []'\"") for s in v.split(',')])
+
+# Logging – capture security‑relevant events
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s %(name)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.security': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
 
 
 # Gemini settings

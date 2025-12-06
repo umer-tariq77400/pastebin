@@ -4,36 +4,39 @@ import * as authAPI from '../api/auth';
 
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Initialize user from local storage immediately for optimistic UI
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (storedUser && token) {
+        return JSON.parse(storedUser);
+    }
+    return null;
+  });
+
+  // Loading state can now default to false since we have an optimistic user
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Check locally stored token on app load
-  useEffect(() => {
-    const checkAuthStatus = async () => {
+  // Verify token validity in background
+  useEffect(() => { 
+    const verifyAuth = async () => {
       const token = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
-
-      if (token && storedUser) {
+      
+      if (token) {
         try {
-          // Set user immediately from local storage for speed
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-
-          // Verify token validity by fetching current user
-          // If this fails (e.g. token expired/invalid), catch block will run
-          await authAPI.getCurrentUser();
+            // If this fails (e.g. token expired), we log them out
+            await authAPI.getCurrentUser();
         } catch {
-          console.log('Session expired or invalid');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setUser(null);
+            console.log('Session expired or invalid');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
         }
       }
-      setLoading(false);
     };
 
-    checkAuthStatus();
+    verifyAuth();
   }, []);
 
   // Login function
@@ -102,19 +105,20 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       await authAPI.logout();
-    } catch (err) {
-      console.log('Logout API failed, clearing local session anyway');
+    } catch {
+      return { success: false, error: 'Logout failed' };
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
       setLoading(false);
-      return { success: true };
     }
+    return { success: true };
   };
 
   const value = {
     user,
+    setUser,
     loading,
     error,
     login,

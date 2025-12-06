@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Loading from './Loading';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -64,7 +64,7 @@ function Login() {
       </form>
 
       <p style={{textAlign:'center', marginTop:'15px'}}>
-        Don't have an account? <a href="/register">Sign up here</a>
+        Don't have an account? <Link to="/register">Sign up here</Link>
       </p>
     </div>
   );

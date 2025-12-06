@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './components/Login'
 import Register from './components/Register'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -8,7 +8,9 @@ import SnippetDetail from './components/SnippetDetail'
 import Dashboard from './components/Dashboard'
 import SharedSnippetAccess from './components/SharedSnippetAccess'
 
+
 function App() {
+
   return (
     <BrowserRouter>
       <nav className="navbar">

@@ -1,25 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const SnippetFormModal = ({ snippet, onClose, onSave, mode = 'create' }) => {
-    const [formData, setFormData] = useState({
-        title: '',
-        code: '',
-        language: 'python',
-        style: 'friendly',
-        linenos: false
-    });
-
-    useEffect(() => {
+    const [formData, setFormData] = useState(() => {
         if (snippet && mode === 'edit') {
-            setFormData({
+            return {
                 title: snippet.title,
                 code: snippet.code,
                 language: snippet.language,
                 style: snippet.style,
                 linenos: snippet.linenos
-            });
+            };
         }
-    }, [snippet, mode]);
+        return {
+            title: '',
+            code: '',
+            language: 'python',
+            style: 'friendly',
+            linenos: false
+        };
+    });
 
     const handleChange = (e) => {
         const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -65,7 +64,14 @@ const SnippetFormModal = ({ snippet, onClose, onSave, mode = 'create' }) => {
                                 <option value="cpp">C++</option>
                                 <option value="html">HTML</option>
                                 <option value="css">CSS</option>
-                                {/* Add more as needed */}
+                                <option value="sql">SQL</option>
+                                <option value="php">PHP</option>
+                                <option value="ruby">Ruby</option>
+                                <option value="go">Go</option>
+                                <option value="rust">Rust</option>
+                                <option value="swift">Swift</option>
+                                <option value="kotlin">Kotlin</option>
+                                <option value="typescript">TypeScript</option>
                             </select>
                         </div>
                         <div className="form-group" style={{flex:1}}>
@@ -74,7 +80,11 @@ const SnippetFormModal = ({ snippet, onClose, onSave, mode = 'create' }) => {
                                 <option value="friendly">Friendly</option>
                                 <option value="colorful">Colorful</option>
                                 <option value="monokai">Monokai</option>
-                                {/* Add more as needed */}
+                                <option value="paraiso">Paraiso</option>
+                                <option value="qtcreator">Qt Creator</option>
+                                <option value="stackoverflow">Stackoverflow</option>
+                                <option value="vs">VS</option>
+                                <option value="xonokai">Xonokai</option>
                             </select>
                         </div>
                     </div>

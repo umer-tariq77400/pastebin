@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Loading from './Loading';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -95,9 +95,9 @@ function Register() {
       </form>
 
       <p style={{textAlign:'center', marginTop:'15px'}}>
-        Already have an account? <a href="/login">Login here</a>
+        Already have an account?  <Link to="/login" style={{color:'blue', textDecoration:'none'}}>Login here</Link>
       </p>
-    </div>
+    </div>  
   );
 }
 
