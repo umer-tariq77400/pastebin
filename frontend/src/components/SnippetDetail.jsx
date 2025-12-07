@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import ReactMarkdown from 'react-markdown';
 import Loading from './Loading';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSnippet, deleteSnippet, updateSnippet, reviewSnippet } from '../api/snippet';

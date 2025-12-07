@@ -1,8 +1,12 @@
+from unittest.mock import patch
+
+from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from django.contrib.auth.models import User
+
 from snippets.models import Snippet
+
 
 class SnippetTests(APITestCase):
     def setUp(self):
@@ -88,3 +92,56 @@ class SnippetTests(APITestCase):
         url = reverse('snippet-detail', args=[self.snippet.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_highlight_snippet(self):
+        url = reverse('snippet-highlight', args=[self.snippet.id])
+        # The view uses StaticHTMLRenderer, which returns HTML
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Expected content based on code='print("hello")' and language='python'
+        self.assertIn('hello', str(response.content))
+
+    @patch('snippets.views.review_code')
+    def test_review_snippet(self, mock_review):
+        mock_review.return_value = "Code looks good."
+        url = reverse('snippet-review', args=[self.snippet.id])
+        
+        # Test GET not allowed (custom message)
+        response = self.client.get(url)
+        self.assertEqual(response.data['detail'], 'Send a POST request to review this snippet.')
+
+        # Test POST
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['review'], "Code looks good.")
+        mock_review.assert_called_once_with(self.snippet.code)
+
+    @patch('snippets.views.review_code')
+    def test_review_shared_snippet(self, mock_review):
+        mock_review.return_value = "Shared code looks good."
+        uuid = self.snippet.uuid
+        if not self.snippet.shared_password:
+             self.snippet.shared_password = "testpassword"
+             self.snippet.save()
+        password = self.snippet.shared_password
+
+        # Logout owner and login as other user to test password requirement
+        self.client.logout()
+        User.objects.create_user(username='other', password='password')
+        self.client.login(username='other', password='password')
+
+        # Construct URL manually as it's a detail_route with regex
+        url = f'/snippets/shared/{uuid}/review/'
+
+        # Test without password
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Test with wrong password
+        response = self.client.post(url, {'password': 'wrong'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Test with correct password
+        response = self.client.post(url, {'password': password})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['review'], "Shared code looks good.")
