@@ -87,11 +87,6 @@ const SnippetFormModal = ({ snippet, onClose, onSave, mode = 'create' }) => {
                                 <option value="friendly">Friendly</option>
                                 <option value="colorful">Colorful</option>
                                 <option value="monokai">Monokai</option>
-                                <option value="paraiso">Paraiso</option>
-                                <option value="qtcreator">Qt Creator</option>
-                                <option value="stackoverflow">Stackoverflow</option>
-                                <option value="vs">VS</option>
-                                <option value="xonokai">Xonokai</option>
                             </select>
                         </div>
                     </div>

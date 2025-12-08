@@ -207,3 +207,4 @@ if not DEBUG:
 
 # Gemini settings
 GEMINI_API_KEY = config('GEMINI_API_KEY')
+GEMINI_MODEL = config('GEMINI_MODEL')

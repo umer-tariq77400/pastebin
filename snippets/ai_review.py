@@ -30,7 +30,7 @@ def review_code(code_content):
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=settings.GEMINI_MODEL,
             contents=[prompt],
             config=types.GenerateContentConfig(
                 temperature=0.7,
