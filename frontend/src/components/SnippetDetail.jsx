@@ -59,10 +59,13 @@ function SnippetDetail() {
   };
 
   const handleUpdate = (data) => {
-      updateSnippet(id, data).then(() => {
+      return updateSnippet(id, data).then(() => {
           fetchSnippet();
           setShowEditModal(false);
-      }).catch(console.error);
+      }).catch((err) => {
+          console.error(err);
+          throw err;
+      });
   };
 
   if (loading) return <div className="loading-container"><Loading /></div>;

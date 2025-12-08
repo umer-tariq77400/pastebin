@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 const SnippetFormModal = ({ snippet, onClose, onSave, mode = 'create' }) => {
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState(() => {
         if (snippet && mode === 'edit') {
             return {
@@ -25,9 +26,15 @@ const SnippetFormModal = ({ snippet, onClose, onSave, mode = 'create' }) => {
         setFormData({ ...formData, [e.target.name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSave(formData);
+        setLoading(true);
+        try {
+            await onSave(formData);
+        } catch (error) {
+            console.error('Failed to save snippet:', error);
+            setLoading(false);
+        }
     };
 
     return (
@@ -100,7 +107,7 @@ const SnippetFormModal = ({ snippet, onClose, onSave, mode = 'create' }) => {
                     </div>
                     <div className="form-actions">
                         <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary">{mode === 'create' ? 'Create' : 'Save Changes'}</button>
+                        <button type="submit" className="btn btn-primary" disabled={loading}>{mode === 'create' ? 'Create' : 'Save Changes'}</button>
                     </div>
                 </form>
             </div>

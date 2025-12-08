@@ -85,19 +85,25 @@ const Dashboard = () => {
 
   const handleFormSubmit = (data) => {
     if (formMode === "create") {
-      createSnippet(data)
+      return createSnippet(data)
         .then(() => {
           fetchSnippets();
           setShowFormModal(false);
         })
-        .catch(console.error);
+        .catch((err) => {
+          console.error(err);
+          throw err;
+        });
     } else {
-      updateSnippet(selectedSnippet.id, data)
+      return updateSnippet(selectedSnippet.id, data)
         .then(() => {
           fetchSnippets();
           setShowFormModal(false);
         })
-        .catch(console.error);
+        .catch((err) => {
+          console.error(err);
+          throw err;
+        });
     }
   };
 
